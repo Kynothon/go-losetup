@@ -62,6 +62,15 @@ func GetFree() (Device, error) {
 func Attach(backingFile string, offset uint64, ro bool) (Device, error) {
 	var dev Device
 
+	dev, err := GetFree()
+	if err != nil {
+		return dev, err
+	}
+
+	return dev.Attach(backingFile, offset, ro)
+}
+
+func (device Device) Attach(backingFile string, offset uint64, ro bool) (Device, error) {
 	flags := os.O_RDWR
 	if ro {
 		flags = os.O_RDONLY
@@ -69,19 +78,15 @@ func Attach(backingFile string, offset uint64, ro bool) (Device, error) {
 
 	back, err := os.OpenFile(backingFile, flags, 0660)
 	if err != nil {
-		return dev, fmt.Errorf("could not open backing file: %v", err)
+		return device, fmt.Errorf("could not open backing file: %v", err)
 	}
 	defer back.Close()
 
-	dev, err = GetFree()
-	if err != nil {
-		return dev, err
-	}
-	dev.Flags = flags
+	device.Flags = flags
 
-	loopFile, err := dev.open()
+	loopFile, err := device.open()
 	if err != nil {
-		return dev, fmt.Errorf("could not open loop device: %v", err)
+		return device, fmt.Errorf("could not open loop device: %v", err)
 	}
 	defer loopFile.Close()
 
@@ -92,11 +97,11 @@ func Attach(backingFile string, offset uint64, ro bool) (Device, error) {
 		info.Offset = offset
 		if err := setInfo(loopFile.Fd(), info); err != nil {
 			unix.Syscall(unix.SYS_IOCTL, loopFile.Fd(), ClrFd, 0)
-			return dev, fmt.Errorf("could not set info")
+			return device, fmt.Errorf("could not set info")
 		}
-		return dev, nil
+		return device, nil
 	} else {
-		return dev, errno
+		return device, errno
 	}
 }
 
