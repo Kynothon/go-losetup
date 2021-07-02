@@ -54,7 +54,7 @@ func GetFree() (Device, error) {
 	if dev < 0 {
 		return Device{}, fmt.Errorf("could not get free device (err: %d): %v", errno, errno)
 	}
-	return Device{number: uint64(dev), flags: os.O_RDWR}, nil
+	return Device{Number: uint64(dev), Flags: os.O_RDWR}, nil
 }
 
 // Attach attaches backingFile to the loopback device starting at offset. If ro
@@ -77,7 +77,7 @@ func Attach(backingFile string, offset uint64, ro bool) (Device, error) {
 	if err != nil {
 		return dev, err
 	}
-	dev.flags = flags
+	dev.Flags = flags
 
 	loopFile, err := dev.open()
 	if err != nil {
