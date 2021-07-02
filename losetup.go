@@ -14,9 +14,9 @@ func (device Device) Add() error {
 		return fmt.Errorf("could not open %v: %v", LoopControlPath, err)
 	}
 	defer ctrl.Close()
-	_, _, errno := unix.Syscall(unix.SYS_IOCTL, ctrl.Fd(), CtlAdd, uintptr(device.number))
+	_, _, errno := unix.Syscall(unix.SYS_IOCTL, ctrl.Fd(), CtlAdd, uintptr(device.Number))
 	if errno == unix.EEXIST {
-		return fmt.Errorf("device already exits")
+		return fmt.Errorf("device already exist")
 	}
 	if errno != 0 {
 		return fmt.Errorf("could not add device (err: %d): %v", errno, errno)
@@ -31,7 +31,7 @@ func (device Device) Remove() error {
 		return fmt.Errorf("could not open %v: %v", LoopControlPath, err)
 	}
 	defer ctrl.Close()
-	_, _, errno := unix.Syscall(unix.SYS_IOCTL, ctrl.Fd(), CtlRemove, uintptr(device.number))
+	_, _, errno := unix.Syscall(unix.SYS_IOCTL, ctrl.Fd(), CtlRemove, uintptr(device.Number))
 	if errno == unix.EBUSY {
 		return fmt.Errorf("could not remove, device in use")
 	}
